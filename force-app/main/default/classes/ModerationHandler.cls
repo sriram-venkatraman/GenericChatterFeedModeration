@@ -11,17 +11,41 @@ public without sharing class ModerationHandler {
                                                 where  IsActive__c = true]) {
             
             if (bp.Block_Words__c != null) {
-                for (String w : bp.Block_Words__c.split('\r\n')) {
-                    system.debug('>W: ' + w);
-                    wMap.put(bp.MasterLabel + ' (' + w + ')', w.remove(' '));
+                if (bp.Block_Words__c.contains('\r\n')) {
+                    for (String w : bp.Block_Words__c.split('\r\n')) {
+                        system.debug('>W: ' + w);
+                        wMap.put(bp.MasterLabel + ' (' + w + ')', w.remove(' '));
+                    }
+                } else if (bp.Block_Words__c.contains('\n')) {
+                    for (String w : bp.Block_Words__c.split('\n')) {
+                        system.debug('>W: ' + w);
+                        wMap.put(bp.MasterLabel + ' (' + w + ')', w.remove(' '));
+                    }
+                } else if (bp.Block_Words__c.contains('\r')) {
+                    for (String w : bp.Block_Words__c.split('\r')) {
+                        system.debug('>W: ' + w);
+                        wMap.put(bp.MasterLabel + ' (' + w + ')', w.remove(' '));
+                    }
                 }
             }
                                                     
             if (bp.Block_REGEX_Patterns__c != null) {
                 i = 0;
-                for (String p : bp.Block_REGEX_Patterns__c.split('\r\n')) {
-                    system.debug('>P: ' + p);
-                    pMap.put(bp.MasterLabel + ' (' + (++i) + ')', Pattern.compile(p));
+                if (bp.Block_REGEX_Patterns__c.contains('\r\n')) {
+                    for (String p : bp.Block_REGEX_Patterns__c.split('\r\n')) {
+                        system.debug('>P: ' + p);
+                        pMap.put(bp.MasterLabel + ' (' + (++i) + ')', Pattern.compile(p));
+                    }
+                } else if (bp.Block_REGEX_Patterns__c.contains('\n')) {
+                    for (String p : bp.Block_REGEX_Patterns__c.split('\n')) {
+                        system.debug('>P: ' + p);
+                        pMap.put(bp.MasterLabel + ' (' + (++i) + ')', Pattern.compile(p));
+                    }
+                } else if (bp.Block_REGEX_Patterns__c.contains('\r')) {
+                    for (String p : bp.Block_REGEX_Patterns__c.split('\r')) {
+                        system.debug('>P: ' + p);
+                        pMap.put(bp.MasterLabel + ' (' + (++i) + ')', Pattern.compile(p));
+                    }
                 }
             }
         }
