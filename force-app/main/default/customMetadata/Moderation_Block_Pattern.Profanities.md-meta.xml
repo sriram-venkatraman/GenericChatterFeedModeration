@@ -14,6 +14,10 @@ holy cow
 ditch</value>
     </values>
     <values>
+        <field>Escape_Patterns__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
         <field>IsActive__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>

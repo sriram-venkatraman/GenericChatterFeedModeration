@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Escape_Patterns__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Use escape patterns to allow a patterns explicit tagged with with affirmative text. For e.g. if a number needs to be entered that resemble SSN one could enter it as follows
+This content does not contain SSN: 987342345(!ssn) blah blah</inlineHelpText>
+    <label>Escape Patterns</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>
