@@ -3,6 +3,7 @@
     <fullName>Block_REGEX_Patterns__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Ensure you enter a valid regex pattern. You can enter multiple regex patterns in each its own line. May want to explore https://regex101.com/ to learn &amp; play with regex.</inlineHelpText>
     <label>Block REGEX Patterns</label>
     <length>32768</length>
     <type>LongTextArea</type>
