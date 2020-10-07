@@ -68,7 +68,8 @@ public without sharing class ModerationHandler {
     }
 
     public Map<String, String> checkContent(Map<String, String> inputMap) {
-        String spaceRemovedInput;
+        String inputContent;
+        String spaceRemovedContent;
         String status;
         Boolean errorFound = false;
         String errorLabel;
@@ -76,13 +77,15 @@ public without sharing class ModerationHandler {
         Map<String, String> returnMap = new Map<String, String>(); 
 
         for (String c : inputMap.keySet()) {
-            spaceRemovedInput = inputMap.get(c);
+            inputContent = inputMap.get(c);
+            spaceRemovedContent = inputContent.remove(' ').remove('-');
+
             errorFound = false;
             exceptionFound = false;
             errorLabel = '';
             status = 'OK';
             for (String w : wMap.keySet()) {
-                if (!errorFound && spaceRemovedInput.containsIgnoreCase(wMap.get(w))) {
+                if (!errorFound && spaceRemovedContent.containsIgnoreCase(wMap.get(w))) {
                     status = 'Error! Found ' + w;
                     errorFound = true;
                     errorLabel = w.split(' \\(')[0];
@@ -90,7 +93,7 @@ public without sharing class ModerationHandler {
             }
 
             for (String p : pMap.keySet()) {
-                if (!errorFound && pMap.get(p).matcher(spaceRemovedInput).matches()) {
+                if (!errorFound && pMap.get(p).matcher(inputContent).matches()) {
                     status = 'Error! Found ' + p;
                     errorFound = true;
                     errorLabel = p.split(' \\(')[0];
@@ -100,7 +103,7 @@ public without sharing class ModerationHandler {
             if (errorFound && errorLabel != '') {
                 Integer i = 0;
                 while (eMap.containsKey(errorLabel + ' (' + (++i) + ')') && !exceptionFound) {
-                    if (eMap.get(errorLabel + ' (' + i + ')').matcher(spaceRemovedInput).matches()) {
+                    if (eMap.get(errorLabel + ' (' + i + ')').matcher(inputContent).matches()) {
                         status = 'Warning! Found Exception for ' + errorLabel + ' (' + i + ')';
                         exceptionFound = true;
                     }
