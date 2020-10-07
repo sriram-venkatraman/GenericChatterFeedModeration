@@ -3,6 +3,10 @@
     <label>Profanities</label>
     <protected>false</protected>
     <values>
+        <field>Block_Message__c</field>
+        <value xsi:type="xsd:string">Blocked! Profanity in the content. Please remove. If still required add (&quot;!moderation) as first letters which will send this content for review &amp; approval.</value>
+    </values>
+    <values>
         <field>Block_REGEX_Patterns__c</field>
         <value xsi:nil="true"/>
     </values>
@@ -15,7 +19,7 @@ ditch</value>
     </values>
     <values>
         <field>Escape_Patterns__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:type="xsd:string">^\(\!moderation\)[\w\W]*$</value>
     </values>
     <values>
         <field>IsActive__c</field>

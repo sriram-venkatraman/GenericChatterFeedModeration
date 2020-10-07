@@ -21,6 +21,9 @@ trigger FeedItemTrigger on FeedItem (before insert, before update) {
         if (fiOutMap.get(k).startsWith('Warning!')) {
             Trigger.new[Integer.valueOf(k)].Status = 'PendingReview';
         }
+        if (fiOutMap.get(k) == 'OK' && Trigger.old[Integer.valueOf(k)].Status == 'PendingReview') {
+            Trigger.new[Integer.valueOf(k)].Status = 'Published';
+        }
     }
     
 }

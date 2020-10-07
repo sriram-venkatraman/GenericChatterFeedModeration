@@ -2,6 +2,7 @@ public without sharing class ModerationHandler {
     Map<String, Pattern> pMap = new Map<String, Pattern>();
     Map<String, Pattern> eMap = new Map<String, Pattern>();
     Map<String, String> wMap = new Map<String, String>();
+    Map<String, String> mMap = new Map<String, String>();
 
     public ModerationHandler() {
         Integer i;
@@ -9,9 +10,10 @@ public without sharing class ModerationHandler {
         for (Moderation_Block_Pattern__mdt bp : [select MasterLabel,
                                                         Block_REGEX_Patterns__c, 
                                                         Block_Words__c,
-                                                        Escape_Patterns__c
+                                                        Escape_Patterns__c,
+                                                        Block_Message__c
                                                 from 	Moderation_Block_Pattern__mdt
-                                                where  IsActive__c = true]) {
+                                                where   IsActive__c = true]) {
             
             newLinePattern = '\r\n';
             if (bp.Block_Words__c != null) {
@@ -64,6 +66,10 @@ public without sharing class ModerationHandler {
                     }
                 }
             }
+
+            if (bp.Block_Message__c != null) {
+                mMap.put(bp.MasterLabel, bp.Block_Message__c);
+            }
         }
     }
 
@@ -98,9 +104,13 @@ public without sharing class ModerationHandler {
                     errorFound = true;
                     errorLabel = p.split(' \\(')[0];
                 }
-            } 
+            }
             
             if (errorFound && errorLabel != '') {
+                if (mMap.get(errorLabel) != null) {
+                    status += '\n' + mMap.get(errorLabel);
+                }
+
                 Integer i = 0;
                 while (eMap.containsKey(errorLabel + ' (' + (++i) + ')') && !exceptionFound) {
                     if (eMap.get(errorLabel + ' (' + i + ')').matcher(inputContent).matches()) {

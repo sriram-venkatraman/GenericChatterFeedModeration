@@ -21,6 +21,9 @@ trigger FeedCommentTrigger on FeedComment (before insert, before update) {
         if (fcOutMap.get(k).startsWith('Warning!')) {
             Trigger.new[Integer.valueOf(k)].Status = 'PendingReview';
         }
+        if (fcOutMap.get(k) == 'OK' && Trigger.old[Integer.valueOf(k)].Status == 'PendingReview') {
+            Trigger.new[Integer.valueOf(k)].Status = 'Published';
+        }
     }
     
 }

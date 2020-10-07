@@ -30,6 +30,10 @@
                 <behavior>Edit</behavior>
                 <field>Escape_Patterns__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Block_Message__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
