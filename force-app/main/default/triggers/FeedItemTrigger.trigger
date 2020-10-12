@@ -8,7 +8,7 @@ trigger FeedItemTrigger on FeedItem (before insert, before update) {
     for (Integer i = 0; i < Trigger.new.size(); i++) {
         fi = Trigger.new[i];
         if (!String.isEmpty(fi.Title)) {
-            fiInMap.put(i.format(), fi.Title + '[__Title__]');
+            fiInMap.put(i.format()+'T', fi.Title);
         }
         fiInMap.put(i.format(), fi.Body);
     }
@@ -20,24 +20,32 @@ trigger FeedItemTrigger on FeedItem (before insert, before update) {
     for (String k : fiOutMap.keySet()) {
         ModerationHandler.ModerationResponse mr = fiOutMap.get(k);
 
+        Integer j;
+        Boolean isTitle = false;
+        if (k.endsWith('T')) {
+            isTitle = true;
+            j = Integer.valueOf(k.split('T')[0]);
+        } else {
+            j = Integer.valueOf(k);
+        }
         if (mr.getStatus().startsWith('Error!')) {
-            Trigger.new[Integer.valueOf(k)].Body.addError(mr.getStatus());
+            Trigger.new[j].Body.addError(mr.getStatus());
         }
         if (mr.getStatus().startsWith('Warning!')) {
-            Trigger.new[Integer.valueOf(k)].Status = 'PendingReview';
+            Trigger.new[j].Status = 'PendingReview';
         }
         if (mr.getStatus().startsWith('Redacted!')) {
-            Trigger.new[Integer.valueOf(k)].Status = 'Published';
+            Trigger.new[j].Status = 'Published';
             String s = mr.getRedactedContent();
-            if (s.endsWith('[__Title__]')) {
-                Trigger.new[Integer.valueOf(k)].Title = s;
+            if (isTitle) {
+                Trigger.new[j].Title = s;
             } else {
-                Trigger.new[Integer.valueOf(k)].Body = s;
+                Trigger.new[j].Body = s;
             }
         }
         if (Trigger.isUpdate) {
-            if (mr.getStatus() == 'OK' && Trigger.old[Integer.valueOf(k)].Status == 'PendingReview') {
-                Trigger.new[Integer.valueOf(k)].Status = 'Published';
+            if (mr.getStatus() == 'OK' && Trigger.old[j].Status == 'PendingReview') {
+                Trigger.new[j].Status = 'Published';
             }
         }
     }
