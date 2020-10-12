@@ -23,7 +23,7 @@ for (String key : output.keySet()) {
                  '-------------------------------');
 }
 ```
-xx
+
 # Salesforce App
 
 ## Dev, Build and Test
