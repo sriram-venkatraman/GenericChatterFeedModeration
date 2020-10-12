@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Redact_Pattern__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>! means input character will be repeated in output; 
+X is mask character repeated in output;
+Any other character will be repeated as is;
+
+e.g. &quot; 4534234567890987 &quot; with redact pattern &quot;&apos;!!XXX-XXXX-XXXX-!!!!!&quot; will be output as &quot; 4XXX-XXXX-XXXX-0987 &quot;</inlineHelpText>
+    <label>Redact Pattern</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

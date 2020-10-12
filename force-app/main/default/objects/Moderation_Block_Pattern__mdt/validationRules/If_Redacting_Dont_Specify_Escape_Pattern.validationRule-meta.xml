@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>If_Redacting_Dont_Specify_Escape_Pattern</fullName>
+    <active>true</active>
+    <errorConditionFormula>NOT ISBLANK( Redact_Pattern__c )  &amp;&amp; NOT ISBLANK ( Escape_Patterns__c )</errorConditionFormula>
+    <errorDisplayField>Escape_Patterns__c</errorDisplayField>
+    <errorMessage>If you want to redact please do not provide &quot;Escape Patterns&quot;</errorMessage>
+</ValidationRule>

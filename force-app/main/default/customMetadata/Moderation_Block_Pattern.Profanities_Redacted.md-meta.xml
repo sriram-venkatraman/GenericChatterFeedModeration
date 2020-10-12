@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>Profanities</label>
+    <label>Profanities Redacted</label>
     <protected>false</protected>
     <values>
         <field>Block_Message__c</field>
-        <value xsi:type="xsd:string">Blocked! Profanity in the content. Please remove. If still required add (&quot;!moderation) as first letters which will send this content for review &amp; approval.</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Block_REGEX_Patterns__c</field>
@@ -15,14 +15,14 @@
     </values>
     <values>
         <field>Escape_Patterns__c</field>
-        <value xsi:type="xsd:string">^\(\!moderation\)[\w\W]*$</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">false</value>
+        <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>Redact_Pattern__c</field>
-        <value xsi:nil="true"/>
+        <value xsi:type="xsd:string">[Profanity Redacted]</value>
     </values>
 </CustomMetadata>

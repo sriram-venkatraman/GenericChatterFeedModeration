@@ -14,7 +14,14 @@ cs.put('5', 'wer 06/02/1965(!dob) ASDQE');
 cs.put('6', 'wer 398456789 ASDQE');
 cs.put('7', 'wer 398456789(!ssn) ASDQE');
 
-System.Debug(mh.checkContent(cs));
+Map<String, ModerationHandler.ModerationResponse> output = mh.checkContent(cs);
+for (String key : output.keySet()) {
+    ModerationHandler.ModerationResponse mr = output.get(key);
+    System.Debug('Key: ' + mr.getKey() + '\n' +
+    			 'Status: ' + mr.getStatus() + '\n' +
+        		 'Redacted Content: ' + mr.getRedactedContent() + '\n' +
+                 '-------------------------------');
+}
 ```
 
 # Salesforce App

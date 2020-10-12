@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>If_Redacting_Dont_Specify_Message</fullName>
+    <active>true</active>
+    <errorConditionFormula>NOT ISBLANK( Block_Message__c )  &amp;&amp; NOT  ISBLANK( Redact_Pattern__c )</errorConditionFormula>
+    <errorDisplayField>Block_Message__c</errorDisplayField>
+    <errorMessage>If Redact pattern specified, do not specify Block Message</errorMessage>
+</ValidationRule>

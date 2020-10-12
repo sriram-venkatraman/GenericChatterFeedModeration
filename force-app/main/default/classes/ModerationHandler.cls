@@ -1,34 +1,47 @@
 public without sharing class ModerationHandler {
-    Map<String, Pattern> pMap = new Map<String, Pattern>();
-    Map<String, Pattern> eMap = new Map<String, Pattern>();
-    Map<String, String> wMap = new Map<String, String>();
-    Map<String, String> mMap = new Map<String, String>();
+    Map<String, Pattern> pMap = new Map<String, Pattern>(); // Block Patterns for each Moderation config
+    Map<String, Pattern> eMap = new Map<String, Pattern>();  // Exception patterns for each Moderation config
+    Map<String, String> mMap = new Map<String, String>(); // Message for each Moderation config
+    Map<String, String> rMap = new Map<String, String>(); // Redact Pattern for each Moderation config
+
+    public class ModerationResponse {
+        private String key;
+        private String status;
+        private String redactedContent;
+
+        public ModerationResponse(String inKey, String inStatus, String inRedactedContent) {
+            key = inKey;
+            status = inStatus;
+            if (status == 'Redacted!') {
+                redactedContent = inRedactedContent;
+            }
+        }
+
+        public String getKey() {
+            return this.key;
+        }
+
+        public String getStatus() {
+            return this.status;
+        }
+        
+        public String getRedactedContent() {
+            return this.redactedContent;
+        }
+    }
 
     public ModerationHandler() {
         Integer i;
         String newLinePattern = '\r\n';
         for (Moderation_Block_Pattern__mdt bp : [select MasterLabel,
                                                         Block_REGEX_Patterns__c, 
-                                                        Block_Words__c,
                                                         Escape_Patterns__c,
-                                                        Block_Message__c
+                                                        Block_Message__c,
+                                                        Redact_Pattern__c
                                                 from 	Moderation_Block_Pattern__mdt
                                                 where   IsActive__c = true]) {
-            
-            newLinePattern = '\r\n';
-            if (bp.Block_Words__c != null) {
-                if (bp.Block_Words__c.contains('\r\n')) {
-                    newLinePattern = '\r\n';
-                } else if (bp.Block_Words__c.contains('\n')) {
-                    newLinePattern = '\n';
-                } else if (bp.Block_Words__c.contains('\r')) {
-                    newLinePattern = '\r';
-                }
-                for (String w : bp.Block_Words__c.split(newLinePattern)) {
-                    wMap.put(bp.MasterLabel + ' (' + w + ')', w.remove(' '));
-                }
-            }
-                         
+
+            // Get block patterns
             newLinePattern = '\r\n';
             if (bp.Block_REGEX_Patterns__c != null) {
                 i = 0;
@@ -47,7 +60,8 @@ public without sharing class ModerationHandler {
                     }
                 }
             }
-                         
+            
+            // Get escape patterns
             newLinePattern = '\r\n';
             if (bp.Escape_Patterns__c != null) {
                 i = 0;
@@ -67,62 +81,126 @@ public without sharing class ModerationHandler {
                 }
             }
 
+            // Get custom block messages
             if (bp.Block_Message__c != null) {
                 mMap.put(bp.MasterLabel, bp.Block_Message__c);
+            }
+
+            // Get redact patterns
+            if (bp.Redact_Pattern__c != null) {
+                rMap.put(bp.MasterLabel, bp.Redact_Pattern__c);
             }
         }
     }
 
-    public Map<String, String> checkContent(Map<String, String> inputMap) {
+    public Map<String, ModerationHandler.ModerationResponse> checkContent(Map<String, String> inputMap) {
         String inputContent;
-        String spaceRemovedContent;
+        String redactedContent;
         String status;
         Boolean errorFound = false;
-        String errorLabel;
+        String currentConfigLabel;
         Boolean exceptionFound = false;
-        Map<String, String> returnMap = new Map<String, String>(); 
+        Map<String, ModerationHandler.ModerationResponse> returnMap = new Map<String, ModerationHandler.ModerationResponse>(); 
 
+        // Check each input content from the map
         for (String c : inputMap.keySet()) {
             inputContent = inputMap.get(c);
-            spaceRemovedContent = inputContent.remove(' ').remove('-');
+            redactedContent = '';
 
             errorFound = false;
             exceptionFound = false;
-            errorLabel = '';
+            currentConfigLabel = '';
             status = 'OK';
-            for (String w : wMap.keySet()) {
-                if (!errorFound && spaceRemovedContent.containsIgnoreCase(wMap.get(w))) {
-                    status = 'Error! Found ' + w;
-                    errorFound = true;
-                    errorLabel = w.split(' \\(')[0];
-                }
-            }
 
+            // Check for regex pattern match; 
+            // Note: after first error the check stops for every input content
+            // If no redaction specified, block pattern found & no exception pattern found, status set to 'Error!'
+            // If Redacts are specified, entire input content is redacted after matching all block patterns & status will be set to Redacted!
+            // while (k < patternKeys.size() && !errorFound) {
             for (String p : pMap.keySet()) {
-                if (!errorFound && pMap.get(p).matcher(inputContent).matches()) {
-                    status = 'Error! Found ' + p;
-                    errorFound = true;
-                    errorLabel = p.split(' \\(')[0];
-                }
-            }
-            
-            if (errorFound && errorLabel != '') {
-                if (mMap.get(errorLabel) != null) {
-                    status += '\n' + mMap.get(errorLabel);
-                }
+                if (!errorFound) {
+                    currentConfigLabel = p.split(' \\(')[0];
 
-                Integer i = 0;
-                while (eMap.containsKey(errorLabel + ' (' + (++i) + ')') && !exceptionFound) {
-                    if (eMap.get(errorLabel + ' (' + i + ')').matcher(inputContent).matches()) {
-                        status = 'Warning! Found Exception for ' + errorLabel + ' (' + i + ')';
-                        exceptionFound = true;
+                    // if redact is required for this pattern, redact entire content
+                    if (rMap.containsKey(currentConfigLabel)) {
+                        redactedContent = redact(inputContent, pMap.get(p), rMap.get(currentConfigLabel));
+                        if (redactedContent != inputContent && !String.isEmpty(redactedContent)) {
+                            status = 'Redacted!';
+                            inputContent = redactedContent;
+                        }
+                    }
+                    // else search for block pattern & exception patterns 
+                    else {
+                        // First if there is a block pattern 
+                        Matcher m = pMap.get(p).matcher(inputContent);
+                        if (!errorFound && m.find()) {
+                            // Find if exception found, then set warning message to status
+                            Integer i = 1;
+                            while (eMap.containsKey(currentConfigLabel + ' (' + i + ')') &&
+                                    !exceptionFound) {
+                                if (eMap.get(currentConfigLabel + ' (' + i + ')').matcher(inputContent).find()) {
+                                    status = 'Warning! Found Exception for ' + currentConfigLabel + ' (' + i + ')';
+                                    exceptionFound = true;
+                                }
+                                i++;
+                            }
+
+                            // If exception not found then set error message to status
+                            if (!exceptionFound) {
+                                status = 'Error! Found ' + p;
+
+                                // If there is a custom message specified, add that to the status
+                                if (mMap.get(currentConfigLabel) != null) {
+                                    status += '\n' + mMap.get(currentConfigLabel);
+                                }
+                                errorFound = true;
+                            }
+                        }
                     }
                 }
             }
-
-            returnMap.put(c, status);
+            returnMap.put(c, new ModerationResponse(c, status, (status == 'Redacted!' ? inputContent : null)));
         }
         return returnMap;
+    }
+
+    public String redact(String inputString, Pattern inputPattern, String redactPattern) {
+        String outputString = '';
+
+        Matcher m = inputPattern.matcher(inputString);
+
+        Integer prevIdx = 0;
+        Integer startIdx;
+        Integer endIdx;
+        String patternMatch;
+        String redactedString;
+        while (m.find()) {
+            // find the start and end indexes of the match
+            startIdx = m.start();
+            endIdx = m.end();
+            patternMatch = inputString.substring(startIdx, endIdx);
+            Integer j = 0;
+            redactedString = '';
+            for (Integer i = 0; i < redactPattern.length() && j < patternMatch.length(); i++) {
+                if (redactPattern.substring(i,i+1) == '!') {
+                    redactedString += patternMatch.substring(j,j+1);
+                    ++j;
+                } else if (redactPattern.substring(i,i+1) == 'X') {
+                    redactedString += 'X';
+                    ++j;
+                } else {
+                    redactedString += redactPattern.substring(i,i+1);
+                }    
+            }
+            outputString += inputString.substring(prevIdx, startIdx) + redactedString;
+            prevIdx = endIdx; 
+        }
+
+        if (prevIdx < inputString.length()-1) {
+            outputString += inputString.substring(prevIdx);
+        }
+
+        return outputString;
     }
 
     public class HandlerException extends Exception { }
